@@ -12,6 +12,7 @@ class File:
         self.size: int = self.path.stat().st_size
         self.hash: int = None
 
+
     def __hash__(self) -> int:
         if self.hash:
             # return cached hash

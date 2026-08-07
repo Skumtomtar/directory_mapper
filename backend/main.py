@@ -4,6 +4,13 @@ from pathlib import Path
 
 from directory import Directory
 
+"""
+TODO:
+    - Review behaviour of find_duplicates
+        - Return second list of all duplicate files
+    - Review static? for get_files_recursive
+"""
+
 
 FOLDER_EXCLUSION_LIST = ["$RECYCLE.BIN","Derrick_project_git"]
 
@@ -26,15 +33,19 @@ def main():
             print(e)
 
     dupes = base_directory.find_duplicates(Directory.get_files_recursive(base_directory))
+    
+    end_time = time.perf_counter()
+    execution_time = end_time - start_time
+    print(f"Execution time: {execution_time:.6f} seconds")
+    
+    
     print("Duplicates:")
     for d in dupes:
+        print(f"Path: {d.path}")
         print(f"Name: {d.name}")
         print(f"Hash: {d.hash}")
         print(f"Size: {d.size}")
 
-    end_time = time.perf_counter()
-    execution_time = end_time - start_time
-    print(f"Execution time: {execution_time:.6f} seconds")
 
     # Implement basic CLI to walk through the directory
 

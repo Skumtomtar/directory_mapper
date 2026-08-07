@@ -80,13 +80,13 @@ class Directory:
     """
 
     # Duplicates are identified by adding
-    # NOTE: Review logic - unique files erroneously flagged
+    # NOTE: Review logic - duplicate should be unique
+    #   Files with duplicate hash returned.
     def find_duplicates(self, file_list: list[File]) -> list[File]:
         file_sizes: dict[int, list[File]] = defaultdict(list) # Default initialise to dict[list]
         candidate_duplicates: list[dict[int, File]] = []
         duplicates_set = set()
         confirmed_duplicates: list[File] = []
-
 
         # Iterate over list of files
         # Add each to dict using file size as key
@@ -94,7 +94,7 @@ class Directory:
         for file in file_list:
             file_sizes[file.size].append(file)
 
-        # Construct list of duplicate file dict
+        # Construct list of duplicate file dicts
         for size in file_sizes:
             if len(file_sizes[size]) > 1:
                 candidate_duplicates.extend(file_sizes[size])
