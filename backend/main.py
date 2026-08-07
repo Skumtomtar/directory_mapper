@@ -14,8 +14,17 @@ TODO:
 
 FOLDER_EXCLUSION_LIST = ["$RECYCLE.BIN","Derrick_project_git"]
 
+def display_init_exceptions(dir: Directory):
+    # Displays exceptions raised during initialisation
+    print(f"Number of exceptions while mapping directory {dir.path}: "
+          f"{len(Directory.initialisation_exceptions)}")
+    if dir.initialisation_exceptions:
+        for e in dir.initialisation_exceptions: 
+            print(e)
+
+
 def main():
-    if not len(sys.argv) == 2:
+    if len(sys.argv) < 2:
         print('Usage: python main.py "directory path"')
         sys.exit(1)
 
@@ -24,20 +33,21 @@ def main():
 
     # Initialise base directory
     base_directory = Directory(Path(sys.argv[1]), FOLDER_EXCLUSION_LIST)
-
-    # Display exceptions
-    print(f"Number of exceptions while mapping directory {base_directory.path}: "
-          f"{len(Directory.initialisation_exceptions)}")
-    if base_directory.initialisation_exceptions:
-        for e in base_directory.initialisation_exceptions: 
-            print(e)
-
-    dupes = base_directory.find_duplicates(Directory.get_files_recursive(base_directory))
+    display_init_exceptions(base_directory)
     
+    second_directory = Directory(Path(sys.argv[2]), FOLDER_EXCLUSION_LIST)
+    display_init_exceptions(second_directory)
+
+    base_dir_files = Directory.get_files_recursive(base_directory)
+    second_dir_files = Directory.get_files_recursive(second_directory)
+    file_list = base_dir_files + second_dir_files
+
+    dupes = Directory.find_duplicates(file_list)
+
     end_time = time.perf_counter()
     execution_time = end_time - start_time
     print(f"Execution time: {execution_time:.6f} seconds")
-    
+    print(f"Number of duplicates found: {len(dupes)}")
     
     print("Duplicates:")
     for d in dupes:
@@ -46,8 +56,6 @@ def main():
         print(f"Hash: {d.hash}")
         print(f"Size: {d.size}")
 
-
-    # Implement basic CLI to walk through the directory
 
 if __name__ == "__main__":
     main()

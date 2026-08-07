@@ -7,6 +7,7 @@ from file import File
 
 
 class Directory:
+    # Initialisation counters
     initialisation_exceptions = []
     total_directories = 0
     total_files = 0
@@ -38,8 +39,7 @@ class Directory:
             except (FileNotFoundError,PermissionError) as e:
                 Directory.initialisation_exceptions.append(e)
 
-    # NOTE - Review and consider if this needs to be a static method.
-    # Refactor to iterative instead of recursive
+    # TODO - Consider using a generator
     @staticmethod
     def get_files_recursive(this_dir: Directory) -> list[File] | None:
         # Add files of current directory to list
@@ -51,38 +51,9 @@ class Directory:
         return unpacked_files
 
 
-    """
-        Approach for comparing files:
-        Construct dictionary of files (see Generators?)
-        Use file size as key, list of file of the same size.
-            Keys with only one file in the list are unique files.
-            Keys with multiple files may have duplicates and require testing
-                These files should then (and only then) be hashed for comparisson
-                In a loop, add files to a Set:
-                    if file in Set:
-                        append to duplicates list
-                    else:
-                        add to set
-                    return duplicates list
-
-                Problem:
-                    I wish to identify the duplicate file that's already in the set
-                        I want to get the full path later.
-                        Test if dupe is in set:
-                            if so, append dupe to list
-                            append(set.file) to list - capture existing dupe using current file as key
-
-                Later:
-                    Take second list (second directory).
-                    Merge into single list for testing of duplication
-                    After list of duplicates has been constructed, split it into
-                    two lists, using list.anchor as seperator
-    """
-
-    # Duplicates are identified by adding
-    # NOTE: Review logic - duplicate should be unique
-    #   Files with duplicate hash returned.
-    def find_duplicates(self, file_list: list[File]) -> list[File]:
+    # Return a sorted list of duplicate files
+    @staticmethod
+    def find_duplicates(file_list: list[File]) -> list[File]:
         file_sizes: dict[int, list[File]] = defaultdict(list) # Default initialise to dict[list]
         candidate_duplicates: list[dict[int, File]] = []
         duplicates_set = set()
@@ -100,10 +71,18 @@ class Directory:
                 candidate_duplicates.extend(file_sizes[size])
 
         # Hash each duplicate file and test against duplicate set
+        # Only captures duplicate files when hash is existing in duplicates_set
         for file in candidate_duplicates:
             if file in duplicates_set:
                 confirmed_duplicates.append(file)
             else:
                 duplicates_set.add(file)
 
+        # Capture remaining duplicate files used for test in duplicate set
+        for file in duplicates_set:
+            if file in confirmed_duplicates:
+                confirmed_duplicates.append(file)
+
+        # Sort duplicates list on file directory then name
+        confirmed_duplicates.sort(key= lambda file: (file.path.parent, file.name))
         return confirmed_duplicates
